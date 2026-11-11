@@ -3,16 +3,12 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 
 export function EventSearchBar() {
-  const [query, setQuery] = useState('')
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
   const initialQuery = searchParams.get('q') || ''
-
-  useEffect(() => {
-    setQuery(initialQuery)
-  }, [initialQuery])
+  const [query, setQuery] = useState(initialQuery)
 
   const debouncedSearch = useCallback(
     (value: string) => {
@@ -59,7 +55,7 @@ export function EventSearchBar() {
         />
         <button
           type="submit"
-          className="absolute right-1 top-1 h-10 rounded-full px-6 bg-brand-pink text-white font-semibold text-sm shadow-[var(--shadow-brand)] hover:bg-[#D63D78] transition-colors focus:ring-2 focus:ring-white focus:outline-none"
+          className="absolute right-0 top-0 h-14 rounded-full px-6 bg-brand-pink text-white font-semibold text-sm shadow-[var(--shadow-brand)] hover:bg-[#D63D78] transition-colors focus:ring-2 focus:ring-white focus:outline-none"
         >
           Search
         </button>

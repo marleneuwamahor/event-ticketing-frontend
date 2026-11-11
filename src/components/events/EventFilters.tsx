@@ -1,9 +1,8 @@
 import { useState, useCallback } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { Tag, Calendar, MapPin, ChevronDown, X } from 'lucide-react'
+import { Calendar, MapPin, ChevronDown, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import {
-  CATEGORIES,
   DATE_OPTIONS,
   LOCATIONS,
 } from '@/data/events'
@@ -19,8 +18,6 @@ interface PillDropdownProps {
   value: string
   options: FilterOption[]
   onChange: (value: string) => void
-  paramKey: string
-  searchParams: URLSearchParams
 }
 
 function PillDropdown({
@@ -29,8 +26,6 @@ function PillDropdown({
   value,
   options,
   onChange,
-  paramKey,
-  searchParams,
 }: PillDropdownProps) {
   const [open, setOpen] = useState(false)
   const selectedLabel = options.find((o) => o.value === value)?.label || value
@@ -95,7 +90,6 @@ export function EventFilters() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const [category, setCategory] = useState(searchParams.get('category') || 'All')
   const [date, setDate] = useState(searchParams.get('date') || 'Any date')
   const [loc, setLoc] = useState(searchParams.get('location') || 'All Kigali')
 
@@ -113,36 +107,22 @@ export function EventFilters() {
   )
 
   const anyActive =
-    category !== 'All' || date !== 'Any date' || loc !== 'All Kigali'
+    date !== 'Any date' || loc !== 'All Kigali'
 
-  const categoryOptions: FilterOption[] = CATEGORIES.map((c) => ({ label: c, value: c }))
   const dateOptions: FilterOption[] = DATE_OPTIONS.map((d) => ({ label: d, value: d }))
   const locationOptions: FilterOption[] = LOCATIONS.map((l) => ({ label: l, value: l }))
 
   const clearFilters = () => {
     const params = new URLSearchParams(location.search)
-    ;['category', 'date', 'location'].forEach((k) => params.delete(k))
+    ;['date', 'location'].forEach((k) => params.delete(k))
     navigate(`?${params.toString()}`, { replace: true })
-    setCategory('All')
     setDate('Any date')
     setLoc('All Kigali')
   }
 
   return (
     <div className="max-w-7xl w-full">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-        <PillDropdown
-          label="Category"
-          icon={Tag}
-          value={category}
-          options={[{ label: 'All', value: 'All' }, ...categoryOptions]}
-          onChange={(v) => {
-            setCategory(v)
-            syncURL('category', v)
-          }}
-          paramKey="category"
-          searchParams={searchParams}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <PillDropdown
           label="Date"
           icon={Calendar}
@@ -152,8 +132,6 @@ export function EventFilters() {
             setDate(v)
             syncURL('date', v)
           }}
-          paramKey="date"
-          searchParams={searchParams}
         />
         <PillDropdown
           label="Location"
@@ -164,14 +142,12 @@ export function EventFilters() {
             setLoc(v)
             syncURL('location', v)
           }}
-          paramKey="location"
-          searchParams={searchParams}
         />
       </div>
       {anyActive && (
         <div className="max-w-7xl w-full mt-3">
-          <Button variant="outline" size="sm" onClick={clearFilters} className="text-brand-pink border-brand-pink hover:bg-brand-pink/5">
-            <X className="w-3 h-3 mr-1.5" />
+          <Button variant="outline" size="md" onClick={clearFilters} className="text-brand-pink border-brand-pink hover:bg-brand-pink/5 flex items-center gap-1 mb-6">
+            <X className="w-5 h-5 mr-1" />
             Clear filters
           </Button>
         </div>

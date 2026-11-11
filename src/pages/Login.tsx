@@ -6,13 +6,13 @@ import { z } from 'zod'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/Button'
-import { GradientText } from '@/components/ui/GradientText'
+
 import { AuthCard, AuthCardHeader, AuthCardFooter } from '@/components/auth/AuthCard'
 import { PasswordInput } from '@/components/auth/PasswordInput'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
-  password: z.string().min(1, 'Password is required').min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(1, 'Password is required').min(6, 'Password must be at least 6 characters'),
 })
 type LoginForm = z.infer<typeof loginSchema>
 
@@ -40,8 +40,13 @@ export default function Login() {
     try {
       await login(data.email, data.password)
       navigate(redirectTo, { replace: true })
-    } catch {
-      setFormError('Invalid email or password. Please try again.')
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Invalid email or password. Please try again.'
+      if (message.toLowerCase().includes('verif')) {
+        navigate(`/verify-otp?email=${encodeURIComponent(data.email)}`, { replace: true })
+        return
+      }
+      setFormError(message)
     } finally {
       setIsLoading(false)
     }
@@ -49,8 +54,8 @@ export default function Login() {
 
   return (
     <div className="bg-gradient-page relative">
-      <AuthCard padded={false} className="max-w-[448px] w-full mx-auto mt-4 shadow-[var(--shadow-auth)]">
-        <div className="p-8">
+      <AuthCard padded={false} className="max-w-[448px] w-full mx-auto mt-6 md:mt-4 shadow-[var(--shadow-auth)]">
+        <div className="p-6 md:p-8">
           <AuthCardHeader
             title="Welcome"
             titleHighlight="back"
@@ -67,7 +72,7 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="space-y-1">
+            <div className="flex flex-col space-y-2">
               <label className="text-sm font-semibold text-ink">Email</label>
               <input
                 {...register('email')}
@@ -91,7 +96,7 @@ export default function Login() {
                   label="Password"
                   error={errors.password?.message}
                   placeholder="Your password"
-                  value={field.value}
+                  value={field.value || ''}
                   onChange={field.onChange}
                 />
               )}
@@ -99,7 +104,7 @@ export default function Login() {
 
             <div className="flex justify-end">
               <a
-                href="#"
+                href="/forgot-password"
                 className="text-sm text-brand-pink font-medium hover:underline focus-ring"
               >
                 Forgot password?
@@ -126,19 +131,16 @@ export default function Login() {
           </form>
 
           <div className="mt-8 relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200"></span>
-            </div>
             <div className="relative flex justify-center text-xs uppercase tracking-wider text-slate-400">
               <span className="px-2 bg-white">or</span>
             </div>
             <Button
               variant="outline"
               size="md"
-              className="w-full mt-4 border-brand-pink/30 hover:bg-brand-pink/5 text-brand-pink font-semibold"
+              className="flex justify-center w-full mt-4 border-brand-pink/30 hover:bg-brand-pink/5 text-brand-pink font-semibold"
               disabled
             >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               Continue with Google
@@ -146,7 +148,7 @@ export default function Login() {
           </div>
 
           <AuthCardFooter
-            text="New to PassPulse?"
+            text="New to KeVENTS?"
             linkText="Sign up"
             linkHref="/signup"
           />
